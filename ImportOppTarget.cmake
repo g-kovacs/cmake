@@ -9,6 +9,8 @@ ImportOppTarget
 .. cmake:command:: import_opp_target
 #]==]
 
+set(_OPP_CMAKE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
 macro(import_opp_target _target _opp_makefile)
     # _cmake_target: generated CMake file with import target [optional argument]
     if(${ARGC} GREATER 2)
@@ -24,7 +26,7 @@ macro(import_opp_target _target _opp_makefile)
 
     # generate target file (prior to build system generation)
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} opp_cmake.py ${_opp_makefile} ${_cmake_target}
+        COMMAND ${PYTHON_EXECUTABLE} ${_OPP_CMAKE_BASE_DIR}/opp_cmake.py ${_opp_makefile} ${_cmake_target}
         ERROR_VARIABLE _opp_cmake_error
         RESULT_VARIABLE _opp_cmake_result
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
