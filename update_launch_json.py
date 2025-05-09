@@ -142,6 +142,7 @@ def main():
         launch_configs.append(config.model)
     launch_settings['configurations'] = launch_configs
 
+    launch_file.parent.mkdir(parents=True, exist_ok=True)
     with launch_file.open("w") as f:
         try:
             json.dump(launch_settings, f, indent=4)

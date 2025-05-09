@@ -94,7 +94,7 @@ Add run and debug targets.
 #]==]
 function(add_opp_run name)
     set(options_args "")
-    set(one_value_args "CONFIG;DEPENDENCY;WORKING_DIRECTORY")
+    set(one_value_args "CONFIG;CONFIGFILE;DEPENDENCY;WORKING_DIRECTORY")
     set(multi_value_args "NED_FOLDERS")
     cmake_parse_arguments(args "${options_args}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
@@ -102,8 +102,8 @@ function(add_opp_run name)
         message(SEND_ERROR "add_opp_run called with invalid arguments: ${args_UNPARSED_ARGUMENTS}")
     endif()
 
-    if(args_CONFIG)
-        set(config "${args_CONFIG}")
+    if(args_CONFIGFILE)
+        set(config "${args_CONFIGFILE}")
     else()
         set(config "omnetpp.ini")
     endif()
@@ -127,6 +127,10 @@ function(add_opp_run name)
     _build_opp_run_command(TARGET ${target} OUTPUT exec NED_FOLDERS ${args_NED_FOLDERS})
 
     string(REPLACE " " ";" run_flags "${RUN_FLAGS}")
+    if(args_CONFIG)
+        list(APPEND run_flags "-c${args_CONFIG}")
+        set(VALGRIND_EXEC_FLAGS "${VALGRIND_EXEC_FLAGS} -c${args_CONFIG}")
+    endif()
     add_custom_target(run_${name}
         COMMAND ${exec} ${config} ${run_flags}
         WORKING_DIRECTORY ${working_directory}

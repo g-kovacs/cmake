@@ -12,7 +12,7 @@ include(CMakeParseArguments)
 function(add_opp_target)
     set(options_args MSG4)
     set(single_args ROOT_DIR SOURCE_DIR TARGET DLL_SYMBOL)
-    set(multi_args DEPENDS OPP_MAKEMAKE)
+    set(multi_args DEPENDS OPP_MAKEMAKE INCLUDE_DIRS)
     cmake_parse_arguments(args "${options_args}" "${single_args}" "${multi_args}" ${ARGN})
 
     if(NOT args_SOURCE_DIR)
@@ -76,7 +76,7 @@ function(add_opp_target)
             OUTPUT_ROOT             ${msg_gen_dir}
             DIRECTORY               ${msg_prefix}
             GEN_SOURCES             _cpp_files
-            ADDITIONAL_NED_PATHS    ${args_SOURCE_DIR}
+            ADDITIONAL_NED_PATHS    ${args_SOURCE_DIR} ${args_INCLUDE_DIRS}
             DLL_SYMBOL              ${args_DLL_SYMBOL}
             ${gen_opp_msg_opt_args}
         )
