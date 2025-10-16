@@ -1,12 +1,3 @@
-#[==[.rst:
-AddOppRun
----------
-
-This module provides mechanisms to run OMNeT++ simulations conveniently without relying on the OMNeT++ IDE.
-
-*The documentation of this module is still a stub!*
-#]==]
-
 include(CMakeParseArguments)
 include(GetNedFolders)
 set(_OPP_CMAKE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
@@ -36,7 +27,6 @@ function(_get_opp_run_dependencies target output)
         endif()
     endforeach()
 
-    list(REMOVE_DUPLICATES dependencies)
     set(${output} ${dependencies} PARENT_SCOPE)
 endfunction()
 
@@ -87,11 +77,6 @@ function(_build_opp_run_command)
     set(${args_OUTPUT} ${exec} PARENT_SCOPE)
 endfunction()
 
-#[==[.rst:
-.. cmake:command:: add_opp_run
-
-Add run and debug targets.
-#]==]
 function(add_opp_run name)
     set(options_args "")
     set(one_value_args "CONFIG;CONFIGFILE;DEPENDENCY;WORKING_DIRECTORY")
@@ -200,11 +185,6 @@ function(add_opp_run name)
     endif()
 endfunction()
 
-#[==[.rst:
-.. cmake:command:: add_opp_test
-
-Add a smoke test target.
-#]==]
 function(add_opp_test name)
     set(one_value_args "CONFIG;RUN;SIMTIME_LIMIT;SUFFIX")
     set(multi_value_args "")
@@ -246,12 +226,6 @@ function(add_opp_test name)
         WORKING_DIRECTORY ${working_directory})
 endfunction(add_opp_test)
 
-#[==[.rst:
-.. cmake:command:: vscode_addon_option
-
-Adds a CMake cache option which allows users to toggle the Visual Studio Code add-on on and off.
-If a *\.vscode* directory exists in the project's root directory, the add-on is enabled by default then.
-#]==]
 function(vscode_addon_option)
     if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/.vscode)
         set(has_vscode_dir ON)
@@ -263,26 +237,25 @@ function(vscode_addon_option)
     set_property(GLOBAL PROPERTY VSCODE_ADDON ${VSCODE_ADDON})
 endfunction()
 
-#[==[.rst:
-.. cmake:command:: generate_run_script
-
-Generates a shell script for running a simulation target.
-#]==]
-function(generate_run_script)
+function(generate_run_config)
     set(option_args "INSTALL")
-    set(one_value_args "TARGET;FILE;TEMPLATE")
+	set(one_value_args "TARGET;FILE;CONFIG")
     cmake_parse_arguments(args "${option_args}" "${one_value_args}" "" ${ARGN})
 
     if(args_UNPARSED_ARGUMENTS)
-        message(SEND_ERROR "generate_run_script called with invalid arguments: ${args_UNPARSED_ARGUMENTS}")
+        message(SEND_ERROR "generate_run_config called with invalid arguments: ${args_UNPARSED_ARGUMENTS}")
     endif()
 
     if(NOT args_TARGET)
-        message(SEND_ERROR "generate_run_script: TARGET argument is missing")
+        message(SEND_ERROR "generate_run_config: TARGET argument is missing")
     endif()
 
     if(NOT args_FILE)
-        message(SEND_ERROR "generate_run_script: FILE argument is missing")
+        message(SEND_ERROR "generate_run_config: FILE argument is missing")
+    endif()
+
+    if(NOT args_CONFIG)
+        message(SEND_ERROR "generate_run_config: CONFIG argument is missing")
     endif()
 
     # collect all NED folders for given target
@@ -305,19 +278,10 @@ function(generate_run_script)
     endforeach()
     set(opp_run_libraries "$<JOIN:${opp_run_libraries}, >")
 
-    # select opp_run executable depending on build type
-    if(NOT CMAKE_BUILD_TYPE OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(opp_run_executable ${OMNETPP_RUN_DEBUG})
-    else()
-        set(opp_run_executable ${OMNETPP_RUN})
-    endif()
+    set(opp_run_executable "$<IF:$<CONFIG:Debug>,${OMNETPP_RUN_DEBUG},${OMNETPP_RUN}>")
     set(opp_runall_script ${OMNETPP_RUNALL})
 
     # substitute variables first, then generator expressions
-    if(NOT args_TEMPLATE)
-        configure_file(${_OPP_CMAKE_BASE_DIR}/run_opp.sh.in ${args_FILE} @ONLY)
-    else()
-        configure_file(${args_TEMPLATE} ${args_FILE} @ONLY)
-    endif()
-    file(GENERATE OUTPUT ${args_FILE} INPUT ${args_FILE})
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/run-artery-config.ini.in ${args_FILE} @ONLY)
+    file(GENERATE OUTPUT ${args_FILE} INPUT ${args_FILE} CONDITION $<CONFIG:${args_CONFIG}>)
 endfunction()
