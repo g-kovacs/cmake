@@ -111,6 +111,13 @@ function(add_opp_run name)
 
     _build_opp_run_command(TARGET ${target} OUTPUT exec NED_FOLDERS ${args_NED_FOLDERS})
 
+    if(WITH_CMDENV)
+        list(APPEND run_flags "-uCmdenv")
+    endif()
+    if(RUN_NUMBER)
+        list(APPEND run_flags "-r${RUN_NUMBER}")
+    endif()
+
     string(REPLACE " " ";" run_flags "${RUN_FLAGS}")
     if(args_CONFIG)
         list(APPEND run_flags "-c${args_CONFIG}")
