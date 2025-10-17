@@ -38,10 +38,11 @@ function(generate_opp_message)
     # ADDITIONAL_NED_PATHS specifies further NED import paths for message compilation. These paths are
     # passed on to the message compiler as `-I` argumnents.
 
+    set(options_args MSG4)
     set(one_value_args TARGET MESSAGE MSG_PREFIX DIRECTORY GEN_SOURCES GEN_INCLUDE_DIR)
     set(multi_value_args APPEND_OPTIONS ADDITIONAL_NED_PATHS)
 
-    cmake_parse_arguments(args "" "${one_value_args}" "${multi_value_args}" ${ARGN})
+    cmake_parse_arguments(args "${options_args}" "${one_value_args}" "${multi_value_args}" ${ARGN})
     if(args_UNPARSED_ARGUMENTS)
         message(SEND_ERROR "generate_opp_message called with invalid arguments: ${args_UNPARSED_ARGUMENTS}")
     endif()
@@ -50,6 +51,12 @@ function(generate_opp_message)
         set(output_root ${args_DIRECTORY})
     else()
         set(output_root ${PROJECT_BINARY_DIR}/opp_messages)
+    endif()
+
+    if(OMNETPP_VERSION VERSION_GREATER_EQUAL "5.3" AND args_MSG4)
+        list(APPEND _args "--msg4")
+    elseif(OMNETPP_VERSION VERSION_GREATER_EQUAL "5.3" AND OMNETPP_VERSION VERSION_LESS "6.0" AND NOT args_MSG4)
+        list(APPEND _args "--msg6")
     endif()
 
     cmake_path(GET args_MESSAGE STEM message_name)
