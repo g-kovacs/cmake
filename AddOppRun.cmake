@@ -77,6 +77,38 @@ function(_build_opp_run_command)
     set(${args_OUTPUT} ${exec} PARENT_SCOPE)
 endfunction()
 
+function(_add_opp_batch_run NAME)
+    get_property(OPP_RUN_COMMAND TARGET run_${NAME} PROPERTY OPP_RUN_COMMAND)
+    if(NOT OPP_RUN_COMMAND)
+        message(FATAL_ERROR "Target run_${NAME} does not have an OPP_RUN_COMMAND property (is AddOppRun.cmake up to date?)")
+    endif()
+
+    get_property(WORKING_DIR TARGET run_${NAME} PROPERTY OPP_RUN_WORKING_DIRECTORY)
+    get_property(CONFIG TARGET run_${NAME} PROPERTY OPP_RUN_CONFIG_FILE)
+    get_property(_run_flags TARGET run_${NAME} PROPERTY OPP_RUN_FLAGS)
+    set(RUN_FLAGS ${_run_flags})
+
+    set(OPP_RUN_COMMAND_LIST ${OPP_RUN_COMMAND})
+
+    list(FIND OPP_RUN_COMMAND_LIST "-n" NED_INDEX)
+    if(NED_INDEX GREATER -1)
+        math(EXPR NED_PATH_INDEX "${NED_INDEX}+1")
+        list(GET OPP_RUN_COMMAND_LIST ${NED_PATH_INDEX} RAW_NED_PATHS)
+
+        string(REPLACE "$<SEMICOLON>" ":" COLON_NED_PATHS "${RAW_NED_PATHS}")
+
+        list(REMOVE_AT OPP_RUN_COMMAND_LIST ${NED_PATH_INDEX})
+        list(INSERT OPP_RUN_COMMAND_LIST ${NED_PATH_INDEX} "${COLON_NED_PATHS}")
+    endif()
+
+    add_custom_target(batch_run_${NAME}
+        COMMAND ${OMNETPP_RUNALL} ${OPP_RUN_COMMAND_LIST} ${CONFIG} ${RUN_FLAGS}
+        WORKING_DIRECTORY ${WORKING_DIR}
+        COMMENT "Batch run '${NAME}' using opp_runall"
+        VERBATIM
+    )
+endfunction()
+
 function(add_opp_run name)
     set(options_args "")
     set(one_value_args "CONFIG;CONFIGFILE;DEPENDENCY;WORKING_DIRECTORY")
@@ -132,7 +164,13 @@ function(add_opp_run name)
         OPP_RUN_TARGET ${target}
         OPP_RUN_CONFIG_FILE ${config}
         OPP_RUN_WORKING_DIRECTORY ${working_directory}
-        OPP_RUN_NED_FOLDERS "${args_NED_FOLDERS}")
+        OPP_RUN_NED_FOLDERS "${args_NED_FOLDERS}"
+        OPP_RUN_COMMAND "${exec}"
+        OPP_RUN_FLAGS "${run_flags}")
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        _add_opp_batch_run(${name})
+    endif()
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND GDB_COMMAND)
         add_custom_target(debug_${name}
