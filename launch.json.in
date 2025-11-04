@@ -1,7 +1,4 @@
 {
-	// Use IntelliSense to learn about possible attributes.
-	// Hover to view descriptions of existing attributes.
-	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 	"version": "0.2.0",
 	"configurations": [
 		{
@@ -10,29 +7,20 @@
 			"type": "cppdbg",
 			"request": "launch",
 
-			// Set path to OMNet++ debug runner
 			"program": "@opp_run_executable@",
 
-			// Set working directory to scenario
 			"cwd": "${workspaceFolder}/scenarios/${input:scenario}",
 
 			"args": [
-				// Paths to NED files
 				@opp_run_ned_folders@,
 
-				// Libraries used for Artery
 				@opp_run_libraries@,
 
-				// .ini file to of the scenario
 				"omnetpp.ini",
 
-				// OMNet++ config to run
 				"-c${input:config}",
-				// Run number
 				"-r${input:runId}",
 
-				// OMNet++ interface can either be Qtenv or Cmdenv
-				// "-uQtenv",
 				"-uCmdenv"
 			],
 			"stopAtEntry": false,
@@ -50,7 +38,6 @@
 					"ignoreFailures": true
 				}
 			],
-			// "preLaunchTask": "C/C++: clang++ build active file",
 			"miDebuggerPath": "/usr/bin/gdb"
 		}
 	],
