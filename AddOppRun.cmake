@@ -50,7 +50,7 @@ function(_build_opp_run_command)
     endforeach()
     if(ned_folders)
         string(SUBSTRING "${ned_folders}" 1 -1 ned_folders)
-        string(REPLACE ";" "$<SEMICOLON>" ned_folders "${ned_folders}")
+        string(REPLACE ";" ":" ned_folders "${ned_folders}")
     endif()
 
     # select opp_run binary depending on build type
@@ -88,21 +88,8 @@ function(_add_opp_batch_run NAME)
     get_property(_run_flags TARGET run_${NAME} PROPERTY OPP_RUN_FLAGS)
     set(RUN_FLAGS ${_run_flags})
 
-    set(OPP_RUN_COMMAND_LIST ${OPP_RUN_COMMAND})
-
-    list(FIND OPP_RUN_COMMAND_LIST "-n" NED_INDEX)
-    if(NED_INDEX GREATER -1)
-        math(EXPR NED_PATH_INDEX "${NED_INDEX}+1")
-        list(GET OPP_RUN_COMMAND_LIST ${NED_PATH_INDEX} RAW_NED_PATHS)
-
-        string(REPLACE "$<SEMICOLON>" ":" COLON_NED_PATHS "${RAW_NED_PATHS}")
-
-        list(REMOVE_AT OPP_RUN_COMMAND_LIST ${NED_PATH_INDEX})
-        list(INSERT OPP_RUN_COMMAND_LIST ${NED_PATH_INDEX} "${COLON_NED_PATHS}")
-    endif()
-
     add_custom_target(batch_run_${NAME}
-        COMMAND ${OMNETPP_RUNALL} ${OPP_RUN_COMMAND_LIST} ${CONFIG} ${RUN_FLAGS}
+        COMMAND ${OMNETPP_RUNALL} ${OPP_RUN_COMMAND} ${CONFIG} ${RUN_FLAGS}
         WORKING_DIRECTORY ${WORKING_DIR}
         COMMENT "Batch run '${NAME}' using opp_runall"
         VERBATIM
