@@ -18,7 +18,14 @@ class GdbConfig:
             "externalConsole": False,
             "MIMode": "gdb",
             "miDebuggerPath": debugger,
-            "setupCommands": setup_commands
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": True,
+                }
+            ]
+            + setup_commands,
         }
 
     @property
@@ -87,7 +94,7 @@ def main():
 
     # Load additional commands for the debugger if file is given and exists
     setup_commands = []
-    if 'setup_commands' in args:
+    if args.setup_commands:
         setup_commands_file = pathlib.Path(args.setup_commands)
         if setup_commands_file.is_file():
             try:
