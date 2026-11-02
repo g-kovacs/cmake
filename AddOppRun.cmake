@@ -88,8 +88,11 @@ function(_add_opp_batch_run NAME)
     get_property(_run_flags TARGET run_${NAME} PROPERTY OPP_RUN_FLAGS)
     set(RUN_FLAGS ${_run_flags})
 
+    set(SUMO_EXECUTABLE "sumo")
+    set(SUMO_OVERRIDE "--**.launcher.sumo=\\\"${SUMO_EXECUTABLE}\\\"")
+
     add_custom_target(batch_run_${NAME}
-        COMMAND ${OMNETPP_RUNALL} ${OPP_RUN_COMMAND} ${CONFIG} ${RUN_FLAGS}
+        COMMAND ${OMNETPP_RUNALL} ${OPP_RUN_COMMAND} ${CONFIG} ${RUN_FLAGS} ${SUMO_OVERRIDE}
         WORKING_DIRECTORY ${WORKING_DIR}
         COMMENT "Batch run '${NAME}' using opp_runall"
         VERBATIM
